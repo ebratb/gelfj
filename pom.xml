@@ -25,7 +25,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.5</java.version>
+        <java.version>6</java.version>
     </properties>
 
     <licenses>
@@ -74,8 +74,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.0.2</version>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>6</source>
+                    <target>6</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -149,6 +149,23 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <!--
+                Adding Custom Log-Appender to Pax-Logging:
+                https://nierbeck.de/2011/08/adding-custom-log-appender-to-pax-logging/
+            -->
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.5.3</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Import-Package>!*</Import-Package>
+                        <Embed-Dependency>*;scope=compile|runtime;inline=true</Embed-Dependency>
+                        <Fragment-Host>org.ops4j.pax.logging.pax-logging-service</Fragment-Host>
+                    </instructions>
+                </configuration>
             </plugin>
         </plugins>
     </build>
