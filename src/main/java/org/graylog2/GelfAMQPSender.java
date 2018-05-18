@@ -23,6 +23,7 @@ public class GelfAMQPSender implements GelfSender {
     private Channel channel;
 
     private final String exchangeName;
+    private final String queueName;
     private final String routingKey;
     private final int maxRetries;
     private final String channelMutex = "channelMutex";
@@ -32,6 +33,17 @@ public class GelfAMQPSender implements GelfSender {
         factory.setUri(host);
 
         this.exchangeName = exchangeName;
+        this.queueName = exchangeName;
+        this.routingKey = routingKey;
+        this.maxRetries = maxRetries;
+    }
+
+    public GelfAMQPSender(String host, String exchangeName, String queueName, String routingKey, int maxRetries) throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
+        factory = new ConnectionFactory();
+        factory.setUri(host);
+
+        this.exchangeName = exchangeName;
+        this.queueName = queueName;
         this.routingKey = routingKey;
         this.maxRetries = maxRetries;
     }
@@ -56,6 +68,7 @@ public class GelfAMQPSender implements GelfSender {
                             connection = factory.newConnection();
                             channel = connection.createChannel();
                             channel.confirmSelect();
+                            channel.queueBind( queueName, exchangeName, routingKey );
                         }
                     }
                 }
@@ -67,7 +80,7 @@ public class GelfAMQPSender implements GelfSender {
                 propertiesBuilder.timestamp(new Date(message.getJavaTimestamp()));
                 BasicProperties properties = propertiesBuilder.build();
 
-                channel.basicPublish(exchangeName, routingKey, properties, message.toAMQPBuffer().array());
+                channel.basicPublish( "", queueName, properties, message.toAMQPBuffer().array());
                 channel.waitForConfirms();
 
                 return GelfSenderResult.OK;
@@ -83,6 +96,10 @@ public class GelfAMQPSender implements GelfSender {
 
     public void close() {
         shutdown = true;
+        try {
+            channel.queueUnbind( queueName, exchangeName, routingKey );
+        } catch (Exception e) {
+        }
         try {
             channel.close();
         } catch (Exception e) {

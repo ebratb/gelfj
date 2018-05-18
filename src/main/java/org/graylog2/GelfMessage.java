@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.nio.Buffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -127,7 +128,7 @@ public class GelfMessage {
         byte[] messageBytes = gzipMessage(toJson());
         ByteBuffer buffer = ByteBuffer.allocate(messageBytes.length);
         buffer.put(messageBytes);
-        buffer.flip();
+        ((Buffer)buffer).flip();
         return buffer;
     }
 
